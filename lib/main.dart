@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get/get.dart';
+import 'package:gpt_flutter/String/LocaleString.dart';
+import 'package:gpt_flutter/database/message_database.dart';
 import 'package:gpt_flutter/screens/HomePage.dart';
 
-void main() {
+void main() async {
+  // await MessageDatabase.instance.init();
   runApp(ProviderScope(child: const MyApp()));
 }
 
@@ -12,7 +16,9 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
+      translations: LocalString(),
+      locale: Locale('en', 'US'),
       title: 'Flutter Demo',
       theme: ThemeData(
         // This is the theme of your application.

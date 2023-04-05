@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get/get.dart';
 import 'package:gpt_flutter/components/BottomInput.dart';
 import 'package:gpt_flutter/components/MessageItem.dart';
 import 'package:gpt_flutter/providers/MessageProvider.dart';
@@ -17,12 +18,22 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   // Default placeholder text.
   String dropdownValue = list.first;
-  bool _switchValue = false;
+  bool _isSpeechModeSwitch = false;
+  final ScrollController _scrollController = ScrollController();
+  String language = "english";
+
+  // MessageTable messageTable = MessageTable();
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Chat"), actions: <Widget>[
+      appBar: AppBar(title: Text("Chat".tr), actions: <Widget>[
         IconButton(
           icon: const Icon(
             Icons.settings,
@@ -34,13 +45,13 @@ class _HomePageState extends State<HomePage> {
                 context: context,
                 builder: (BuildContext context) {
                   return SizedBox(
-                    height: 180,
+                    height: 245,
                     child: Column(
                       children: [
                         Container(
                             margin: EdgeInsets.only(top: 10),
                             child: Text(
-                              "Setting",
+                              "Setting".tr,
                               style: TextStyle(
                                   fontSize: 20, fontWeight: FontWeight.w500),
                             )),
@@ -51,24 +62,142 @@ class _HomePageState extends State<HomePage> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                "Enable auto speech",
+                                "Enable auto speech".tr,
                                 style: TextStyle(fontSize: 16),
                               ),
                               BottomSheetSwitch(
-                                switchValue: _switchValue,
+                                switchValue: _isSpeechModeSwitch,
                                 valueChanged: (value) {
-                                  _switchValue = value;
+                                  setState(() {
+                                    _isSpeechModeSwitch = value;
+                                  });
                                 },
                               )
                             ],
                           ),
                         ),
                         const Divider(),
+                        InkWell(
+                          child: Container(
+                            padding: EdgeInsets.only(
+                                left: 15, right: 15, top: 5, bottom: 5),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Language'.tr,
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                                Icon(Icons.arrow_forward_ios_rounded)
+                              ],
+                            ),
+                          ),
+                          onTap: () {
+                            Navigator.pop(context);
+                            showModalBottomSheet(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return SizedBox(
+                                    height: 160,
+                                    child: Container(
+                                        padding: EdgeInsets.only(
+                                            left: 15,
+                                            right: 15,
+                                            top: 5,
+                                            bottom: 5),
+                                        child: Column(children: [
+                                          Container(
+                                              margin: EdgeInsets.only(top: 10),
+                                              child: Text(
+                                                "Language".tr,
+                                                style: TextStyle(
+                                                    fontSize: 20,
+                                                    fontWeight:
+                                                        FontWeight.w500),
+                                              )),
+                                          const Divider(),
+                                          InkWell(
+                                            child: Container(
+                                              padding: EdgeInsets.only(
+                                                  left: 15,
+                                                  right: 15,
+                                                  top: 5,
+                                                  bottom: 5),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Text(
+                                                    "Vietnamese".tr,
+                                                    style:
+                                                        TextStyle(fontSize: 16),
+                                                  ),
+                                                  language == "vietnamese"
+                                                      ? Icon(
+                                                          Icons.check_outlined,
+                                                          color:
+                                                              Colors.deepPurple,
+                                                        )
+                                                      : Container()
+                                                ],
+                                              ),
+                                            ),
+                                            onTap: () {
+                                              setState(() {
+                                                language = "vietnamese";
+                                              });
+                                              Get.updateLocale(Locale('vn', 'VN'));
+                                              Navigator.pop(context);
+                                            },
+                                          ),
+                                          const Divider(),
+                                          InkWell(
+                                              onTap: () {
+                                                setState(() {
+                                                  language = "english";
+                                                });
+                                                Get.updateLocale(Locale("en", 'US'));
+                                                Navigator.pop(context);
+                                              },
+                                              child: Container(
+                                                padding: EdgeInsets.only(
+                                                    left: 15,
+                                                    right: 15,
+                                                    top: 5,
+                                                    bottom: 5),
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    Text(
+                                                      "English".tr,
+                                                      style: TextStyle(
+                                                          fontSize: 16),
+                                                    ),
+                                                    language != "vietnamese"
+                                                        ? Icon(
+                                                            Icons
+                                                                .check_outlined,
+                                                            color: Colors
+                                                                .deepPurple,
+                                                          )
+                                                        : Container()
+                                                  ],
+                                                ),
+                                              )),
+                                        ])),
+                                  );
+                                });
+                          },
+                        ),
+                        const Divider(),
                         Container(
                             width: double.infinity,
                             child: TextButton(
                               onPressed: () {},
-                              child: Text("Delete chat history",
+                              child: Text("Delete chat history".tr,
                                   style: TextStyle(
                                       fontSize: 16, color: Colors.red)),
                             ))
@@ -81,68 +210,33 @@ class _HomePageState extends State<HomePage> {
       ]),
       body: Center(
           child: Column(
-            children: [
-              Container(
-                padding: EdgeInsets.all(10),
-                height: 60,
-                color: Colors.deepPurple.shade50,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Container(
-                        padding: EdgeInsets.only(left: 13, right: 13),
-                        decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey, width: 1),
-                            borderRadius: BorderRadius.circular(15)),
-                        child: DropdownButton<String>(
-                          value: dropdownValue,
-                          icon: const Icon(Icons.expand_more),
-                          underline: SizedBox(),
-                          dropdownColor: Colors.deepPurple.shade50,
-                          iconSize: 30,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w500, color: Colors.black),
-                          onChanged: (String? value) {
-                            // This is called when the user selects an item.
-                            setState(() {
-                              dropdownValue = value!;
-                            });
-                          },
-                          items: list.map<DropdownMenuItem<String>>((
-                              String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(value),
-                            );
-                          }).toList(),
-                        ))
-                  ],
-                ),
-              ),
-              Expanded(
-                  child: Container(
-                    color: Colors.white,
-                    child: Consumer(
-                      builder: (context, ref, child) {
-                        final messages = ref.watch(messagesProvider).reversed.toList();
-                        return ListView.builder(
-                          reverse: true,
-                            itemCount: messages.length,
-                             itemBuilder: ( context,  index) =>
-                              MessageItem(text: messages[index].text, isMe: messages[index].isMe),
-
-                           );
-                      }
-                    ),
-                    // child: ListView(children: [
-                    //     MessageItem(text: "list giving the asset and other descriptors for the font. For example", isMe: false),
-                    //   MessageItem(text: "list giving the asset and other descriptors for the font. For example", isMe: true)
-                    //
-                    // ],),
-                  )),
-              BottomInput()
-            ],
-          )),
+        children: [
+          Container(
+            padding: EdgeInsets.all(10),
+            height: 2,
+            color: Colors.deepPurple.shade50,
+          ),
+          Expanded(
+            child: Consumer(builder: (context, ref, child) {
+              final messages = ref.watch(messagesProvider).reversed.toList();
+              return ListView.builder(
+                reverse: true,
+                itemCount: messages.length,
+                itemBuilder: (context, index) {
+                  return MessageItem(
+                      text: messages[index].text, isMe: messages[index].isMe, language: language,);
+                },
+              );
+            }),
+            // child: ListView(children: [
+            //     MessageItem(text: "list giving the asset and other descriptors for the font. For example", isMe: false),
+            //   MessageItem(text: "list giving the asset and other descriptors for the font. For example", isMe: true)
+            //
+            // ],),
+          ),
+          BottomInput(_isSpeechModeSwitch)
+        ],
+      )),
     );
   }
 }

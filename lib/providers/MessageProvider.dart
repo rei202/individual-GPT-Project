@@ -6,6 +6,9 @@ class MessageNotifier extends StateNotifier<List<Message>>{
   void add(Message message){
     state = [...state, message];
   }
+  void addList(Message message){
+    state = [...state, message];
+  }
 
 }
 final messagesProvider = StateNotifierProvider<MessageNotifier, List<Message>>((ref) => MessageNotifier(),

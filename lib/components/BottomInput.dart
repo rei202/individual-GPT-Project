@@ -1,6 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_tts/flutter_tts.dart';
+import 'package:get/get.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:gpt_flutter/main.dart';
 import 'package:gpt_flutter/providers/MessageProvider.dart';
 import 'package:gpt_flutter/services/AiHandler.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
@@ -10,7 +14,8 @@ import '../models/Message.dart';
 import 'SendToggleButton.dart';
 
 class BottomInput extends ConsumerStatefulWidget {
-  const BottomInput({Key? key}) : super(key: key);
+  const BottomInput(this._isSpeechModeSwitch, {Key? key}) : super(key: key);
+  final _isSpeechModeSwitch;
 
   @override
   ConsumerState<BottomInput> createState() => _BottomInputState();
@@ -25,6 +30,14 @@ class _BottomInputState extends ConsumerState<BottomInput> {
   String lastWords = 'welcome to ads';
   bool enableHandFree = false;
   AIHandler openAi = AIHandler();
+  FlutterTts flutterTts = FlutterTts();
+  // MessageTable messageTable = MessageTable();
+
+  Future<void> speak(text) async {
+    await flutterTts.setLanguage("en-US");
+    await flutterTts.setPitch(1);
+    await flutterTts.speak(text);
+  }
 
   @override
   void initState() {
@@ -76,25 +89,14 @@ class _BottomInputState extends ConsumerState<BottomInput> {
       ], color: Colors.deepPurple.shade50),
       child: Column(
         children: [
-          Text(
-            _speechToText.isListening
-                ? '$_lastWords'
-                // If listening isn't active but could be tell the user
-                // how to start it, otherwise indicate that speech
-                // recognition is not yet ready or not supported on
-                // the target device
-                : _speechEnabled
-                    ? 'Tap the microphone to start listening...'
-                    : 'Speech not available',
-          ),
           Container(
               margin: EdgeInsets.only(top: 10),
               padding: EdgeInsets.only(left: 15, right: 15),
-              height: 50,
               child: Row(
                 children: [
                   Expanded(
                       child: TextField(
+                          maxLines: null,
                           controller: messageController,
                           onChanged: (value) {
                             if (value.isNotEmpty) {
@@ -107,10 +109,11 @@ class _BottomInputState extends ConsumerState<BottomInput> {
                               });
                             }
                           },
+                          showCursor: messageController.text.isNotEmpty,
                           decoration: InputDecoration(
                               border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10)),
-                              hintText: 'Start typing or taking...'))),
+                              hintText: "Aa"))),
                   SizedBox(
                     width: 6,
                   ),
@@ -118,6 +121,10 @@ class _BottomInputState extends ConsumerState<BottomInput> {
                       ? SendButton(
                           sendTextMessage: () {
                             sendTextMessage(messageController.text);
+                            setState(() {
+                              isType = false;
+                              messageController.clear();
+                            });
                           },
                         )
                       : Container())
@@ -128,7 +135,6 @@ class _BottomInputState extends ConsumerState<BottomInput> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Spacer(),
                 ElevatedButton(
                   onPressed: _speechToText.isNotListening
                       ? _startListening
@@ -144,20 +150,6 @@ class _BottomInputState extends ConsumerState<BottomInput> {
                     color: Colors.white,
                   ),
                 ),
-                Expanded(
-                    child: Transform.scale(
-                        scale: 0.75,
-                        child: Row(children: [
-                          Text("hand-free"),
-                          Checkbox(
-                            value: enableHandFree,
-                            onChanged: (bool? value) {
-                              setState(() {
-                                enableHandFree = value!;
-                              });
-                            },
-                          )
-                        ])))
               ],
             ),
           )
@@ -169,10 +161,19 @@ class _BottomInputState extends ConsumerState<BottomInput> {
   Future<void> sendTextMessage(String text) async {
     print("send");
     final messages = ref.read(messagesProvider.notifier);
+    // await messageTable.insertMessage(Message(
+    //     DateTime.now().toString(), text, true));
     addToMessageList(DateTime.now().toString(), text, true);
     final response = await openAi.getResponse(text);
+
     print(response);
+    // await messageTable.insertMessage(Message(
+    //     DateTime.now().toString() , response, false));
     addToMessageList(DateTime.now().toString() , response, false);
+    print(widget._isSpeechModeSwitch);
+    if(widget._isSpeechModeSwitch){
+       speak(response);
+    }
 
   }
 
