@@ -5,29 +5,44 @@ import 'package:gpt_flutter/components/BottomInput.dart';
 import 'package:gpt_flutter/components/MessageItem.dart';
 import 'package:gpt_flutter/providers/MessageProvider.dart';
 import '../components/BottomSheetSwitch.dart';
+import '../database/message_database.dart';
+import '../models/Message.dart';
 
 const List<String> list = <String>['Vietnamese', 'English'];
+List<Map<String,String>> messages = [];
 
-class HomePage extends StatefulWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
   @override
-  State<StatefulWidget> createState() => _HomePageState();
+  ConsumerState<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends ConsumerState<HomePage> {
   // Default placeholder text.
   String dropdownValue = list.first;
-  bool _isSpeechModeSwitch = false;
+  bool _isSpeechModeSwitch = true;
   final ScrollController _scrollController = ScrollController();
   String language = "english";
 
   // MessageTable messageTable = MessageTable();
 
   @override
-  void initState() {
+    initState()  {
     // TODO: implement initState
     super.initState();
+    onStart();
+
+  }
+  void onStart() async {
+    List<Message> list =  await MessageDatabase().getAllMessage();
+    print(list);
+    final messages = ref.read(messagesProvider.notifier);
+    messages.addList(list);
+  }
+  void deleteMessage() {
+    final messages = ref.read(messagesProvider.notifier);
+    messages.deleteList();
   }
 
   @override
@@ -45,7 +60,7 @@ class _HomePageState extends State<HomePage> {
                 context: context,
                 builder: (BuildContext context) {
                   return SizedBox(
-                    height: 245,
+                    height: 230,
                     child: Column(
                       children: [
                         Container(
@@ -196,7 +211,11 @@ class _HomePageState extends State<HomePage> {
                         Container(
                             width: double.infinity,
                             child: TextButton(
-                              onPressed: () {},
+                              onPressed: () async {
+                                await MessageDatabase().deleteAllMessage();
+                                deleteMessage();
+                                Navigator.pop(context);
+                              },
                               child: Text("Delete chat history".tr,
                                   style: TextStyle(
                                       fontSize: 16, color: Colors.red)),
@@ -234,7 +253,7 @@ class _HomePageState extends State<HomePage> {
             //
             // ],),
           ),
-          BottomInput(_isSpeechModeSwitch)
+          BottomInput(_isSpeechModeSwitch, language, messages)
         ],
       )),
     );

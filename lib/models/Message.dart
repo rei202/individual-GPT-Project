@@ -1,7 +1,7 @@
 class Message {
   final String id;
   final String text;
-  final bool isMe;
+  final int isMe;
 
 
 

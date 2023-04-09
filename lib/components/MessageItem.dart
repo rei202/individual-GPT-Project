@@ -9,7 +9,7 @@ Color myColor = Colors.deepPurple.shade300;
 
 class MessageItem extends StatefulWidget {
   final String text;
-  final bool isMe;
+  final int isMe;
   final language;
 
   const MessageItem({Key? key, required this.text, required this.isMe,required this.language})
@@ -23,7 +23,7 @@ class _MessageItemState extends State<MessageItem> {
   FlutterTts flutterTts = FlutterTts();
 
   Future<void> speak(text) async {
-    await flutterTts.setLanguage(widget.language == "vietnamese"?"vn-VN": "en-US");
+    await flutterTts.setLanguage(widget.language == "vietnamese"?"vi-VN": "en-US");
     await flutterTts.setPitch(1);
     await flutterTts.speak(text);
   }
@@ -41,10 +41,10 @@ class _MessageItemState extends State<MessageItem> {
         margin: EdgeInsets.all(10),
         child: Row(
           mainAxisAlignment:
-              widget.isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+              widget.isMe == 1 ? MainAxisAlignment.end : MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            (!widget.isMe
+            (widget.isMe != 1
                 ? Container(
                     width: 40,
                     height: 40,
@@ -61,13 +61,13 @@ class _MessageItemState extends State<MessageItem> {
               padding: EdgeInsets.all(10),
               child: Text(widget.text,
                   style: TextStyle(
-                      color: widget.isMe ? Colors.white : Colors.black,
+                      color: widget.isMe ==1 ? Colors.white : Colors.black,
                       fontSize: 16)),
               decoration: BoxDecoration(
-                  color: !widget.isMe ? notMeColor : myColor,
+                  color: widget.isMe !=1 ? notMeColor : myColor,
                   borderRadius: BorderRadius.circular(10)),
             ),
-            (!widget.isMe
+            (widget.isMe !=1
                 ? IconButton(
                     icon: Icon(Icons.play_circle_outline),
                     onPressed: () {

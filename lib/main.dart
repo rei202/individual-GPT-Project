@@ -8,6 +8,7 @@ import 'package:gpt_flutter/screens/HomePage.dart';
 void main() async {
   // await MessageDatabase.instance.init();
   runApp(ProviderScope(child: const MyApp()));
+
 }
 
 class MyApp extends StatelessWidget {

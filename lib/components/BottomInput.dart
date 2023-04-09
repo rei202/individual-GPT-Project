@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:get/get.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:gpt_flutter/database/message_database.dart';
 import 'package:gpt_flutter/main.dart';
 import 'package:gpt_flutter/providers/MessageProvider.dart';
 import 'package:gpt_flutter/services/AiHandler.dart';
@@ -14,8 +15,12 @@ import '../models/Message.dart';
 import 'SendToggleButton.dart';
 
 class BottomInput extends ConsumerStatefulWidget {
-  const BottomInput(this._isSpeechModeSwitch, {Key? key}) : super(key: key);
+  const BottomInput(this._isSpeechModeSwitch, this._language, this.messages,
+      {Key? key})
+      : super(key: key);
   final _isSpeechModeSwitch;
+  final _language;
+  final List<Map<String, String>> messages;
 
   @override
   ConsumerState<BottomInput> createState() => _BottomInputState();
@@ -31,10 +36,13 @@ class _BottomInputState extends ConsumerState<BottomInput> {
   bool enableHandFree = false;
   AIHandler openAi = AIHandler();
   FlutterTts flutterTts = FlutterTts();
+
   // MessageTable messageTable = MessageTable();
 
   Future<void> speak(text) async {
-    await flutterTts.setLanguage("en-US");
+    await flutterTts
+        .setLanguage(widget._language == "vietnamese" ? "vi-VN" : "en-US");
+    print(widget._language);
     await flutterTts.setPitch(1);
     await flutterTts.speak(text);
   }
@@ -54,7 +62,10 @@ class _BottomInputState extends ConsumerState<BottomInput> {
   }
 
   void _startListening() async {
-    await _speechToText.listen(onResult: _onSpeechResult);
+    await _speechToText.listen(
+      onResult: _onSpeechResult,
+      localeId: widget._language == "vietnamese"?"vi-VN": "en-US",
+    );
     setState(() {});
   }
 
@@ -161,28 +172,31 @@ class _BottomInputState extends ConsumerState<BottomInput> {
   Future<void> sendTextMessage(String text) async {
     print("send");
     final messages = ref.read(messagesProvider.notifier);
-    // await messageTable.insertMessage(Message(
-    //     DateTime.now().toString(), text, true));
-    addToMessageList(DateTime.now().toString(), text, true);
-    final response = await openAi.getResponse(text);
+    // await MessageDatabase().addDataLocally(id:DateTime.now().toString(),text:text,isMe: 1);
+    await MessageDatabase()
+        .insertMessage(Message(DateTime.now().toString(), text, 1));
+    addToMessageList(DateTime.now().toString(), text, 1);
+    widget.messages.add(Map.of({"role": "user", "content": text}));
+    final response = await openAi.getResponse(widget.messages);
 
     print(response);
-    // await messageTable.insertMessage(Message(
-    //     DateTime.now().toString() , response, false));
-    addToMessageList(DateTime.now().toString() , response, false);
+    // await MessageDatabase().addDataLocally(id:DateTime.now().toString(),text:response,isMe: 0);
+    widget.messages.add(Map.of({"role": "assistant", "content": response}));
+    await MessageDatabase()
+        .insertMessage(Message(DateTime.now().toString(), response, 0));
+    addToMessageList(DateTime.now().toString(), response, 0);
     print(widget._isSpeechModeSwitch);
-    if(widget._isSpeechModeSwitch){
-       speak(response);
+    if (widget._isSpeechModeSwitch) {
+      speak(response);
     }
-
   }
 
-  void addToMessageList(String id, String text, bool isMe) {
+  void addToMessageList(String id, String text, int isMe) {
     final messages = ref.read(messagesProvider.notifier);
     messages.add(Message(
       id,
       text,
-      isMe,
+      isMe as int,
     ));
   }
 }
