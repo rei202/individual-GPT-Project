@@ -1,3 +1,8 @@
 Tên: Lê Hoàng Nhật
 Ms: 19127495
 Link video demo: https://youtu.be/u4ZBDonKtdQ
+Link github: https://github.com/rei202/individual-GPT-Project
+
+Lưu lý: do em k thể để API keys của gpt public ở github nên cần phải sửa API keys ở lib/services/AiHandler.dart
+
+Ở tệp zip mà em nộp ở moodle thì không cần thay đổi vì em đã cập nhật API keys mới nhất
